@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="app-bg">
+    <div class="app-container">
+        <aside class="sidebar glass-panel">
+            <div class="logo"><h2>AttMaster</h2></div>
+            <nav>
+                <a href="#" class="nav-item active" data-target="dashboard"><i class="icon">📊</i> Dashboard</a>
+                <a href="#" class="nav-item" data-target="students"><i class="icon">👩‍🎓</i> Students</a>
+                <a href="#" class="nav-item" data-target="subjects"><i class="icon">📚</i> Subjects</a>
+                <a href="#" class="nav-item" data-target="attendance"><i class="icon">✅</i> Attendance</a>
+                <a href="#" class="nav-item" data-target="records"><i class="icon">📅</i> Records</a>
+            </nav>
+            <button id="logoutBtn" class="btn logout-btn">Logout</button>
+        </aside>
+
+        <main class="main-content">
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="view-section active">
+                <header>
+                    <h1>Dashboard</h1>
+                    <div class="user-info">Welcome, Admin</div>
+                </header>
+                
+                <div class="stats-grid">
+                    <div class="stat-card glass-panel">
+                        <h3>Total Students</h3>
+                        <p id="stat-students" class="stat-value">0</p>
+                    </div>
+                    <div class="stat-card glass-panel">
+                        <h3>Total Subjects</h3>
+                        <p id="stat-subjects" class="stat-value">0</p>
+                    </div>
+                    <div class="stat-card glass-panel">
+                        <h3>Classes Held</h3>
+                        <p id="stat-classes" class="stat-value">0</p>
+                    </div>
+                </div>
+
+                <div class="glass-panel" style="padding: 20px; margin-bottom: 30px;">
+                    <h3 style="margin-bottom: 10px;">View Chart By Student:</h3>
+                    <div id="studentPills" style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <!-- Buttons populated by JS -->
+                    </div>
+                </div>
+
+                <div class="glass-panel" style="padding: 20px; margin-bottom: 30px;">
+                    <h3>Detailed Subject-wise Attendance</h3>
+                    <div class="table-container mt-4">
+                        <table id="dashboardDetailedTable">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Subject</th>
+                                    <th>Classes Held</th>
+                                    <th>Attended</th>
+                                    <th>Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="charts-container">
+                    <div class="chart-wrapper glass-panel">
+                        <canvas id="attendanceChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-panel alerts-panel">
+                    <h3>Low Attendance Alerts (< 75%)</h3>
+                    <ul id="alertsList" class="alerts-list">
+                        <!-- Populated by JS -->
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Students Section -->
+            <section id="students" class="view-section hidden">
+                <header>
+                    <h1>Manage Students</h1>
+                    <button class="btn primary-btn" onclick="openModal('studentModal')">+ Add Student</button>
+                </header>
+                <div class="glass-panel table-container">
+                    <table id="studentsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Subjects Section -->
+            <section id="subjects" class="view-section hidden">
+                <header>
+                    <h1>Manage Subjects</h1>
+                    <button class="btn primary-btn" onclick="openModal('subjectModal')">+ Add Subject</button>
+                </header>
+                <div class="glass-panel table-container">
+                    <table id="subjectsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Code</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Attendance Section -->
+            <section id="attendance" class="view-section hidden">
+                <header>
+                    <h1>Calendar & Attendance</h1>
+                    <a href="/api/attendance/export" class="btn primary-btn" target="_blank" style="text-decoration:none; padding:10px 15px;">📄 Export CSV</a>
+                </header>
+                
+                <div class="glass-panel calendar-wrapper">
+                    <div class="calendar-header">
+                        <button class="btn" id="prevMonth">&lt; Prev</button>
+                        <h2 id="monthYearDisplay">Month Year</h2>
+                        <button class="btn" id="nextMonth">Next &gt;</button>
+                    </div>
+                    <div class="calendar-grid-header">
+                        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                    </div>
+                    <div class="calendar-grid" id="calendarDays">
+                        <!-- Days populated by JS -->
+                    </div>
+                </div>
+
+                <div id="attendanceModal" class="modal hidden">
+                    <div class="modal-content glass-panel" style="max-width: 600px;">
+                        <span class="close" onclick="closeModal('attendanceModal')">&times;</span>
+                        <h2 id="modalDateHeader">Mark Attendance for ...</h2>
+                        <div class="attendance-setup" style="margin-bottom: 20px;">
+                            <label style="display:block; margin-bottom:10px; font-weight:bold;">Select Subject:</label>
+                            <div id="attendanceSubjectPills" style="display:flex; gap:10px; flex-wrap:wrap;">
+                                <!-- populated by JS -->
+                            </div>
+                        </div>
+                        
+                        <div id="attendanceMarkingArea" class="hidden mt-4">
+                            <h3 id="currentClassInfo" style="margin-bottom: 15px;"></h3>
+                            <table id="attendanceMarkingTable">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Action</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Records Section -->
+            <section id="records" class="view-section hidden">
+                <header>
+                    <h1>Attendance Records</h1>
+                </header>
+                <div class="glass-panel form-panel" style="padding: 20px;">
+                    <div class="attendance-setup" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+                        <div class="input-group" style="margin-bottom:0; flex:1; min-width: 150px;">
+                            <label>Date</label>
+                            <input type="date" id="filterDate" onchange="fetchRecords()">
+                        </div>
+                        <div class="input-group" style="margin-bottom:0; flex:1; min-width: 150px;">
+                            <label>Subject</label>
+                            <select id="filterSubject" onchange="fetchRecords()">
+                                <option value="">All Subjects</option>
+                            </select>
+                        </div>
+                        <div class="input-group" style="margin-bottom:0; flex:1; min-width: 150px;">
+                            <label>Student</label>
+                            <select id="filterStudent" onchange="fetchRecords()">
+                                <option value="">All Students</option>
+                            </select>
+                        </div>
+                        <button class="btn primary-btn" onclick="fetchRecords()" style="flex:1; min-width: 150px;">View Records</button>
+                    </div>
+                </div>
+                <div class="glass-panel table-container mt-4">
+                    <table id="recordsTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Student</th>
+                                <th>Subject</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="studentModal" class="modal hidden">
+        <div class="modal-content glass-panel">
+            <span class="close" onclick="closeModal('studentModal')">&times;</span>
+            <h2>Add Student</h2>
+            <form id="studentForm">
+                <div class="input-group">
+                    <label>Name</label>
+                    <input type="text" id="sName" required>
+                </div>
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="sEmail" required>
+                </div>
+                <button type="submit" class="btn primary-btn">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="subjectModal" class="modal hidden">
+        <div class="modal-content glass-panel">
+            <span class="close" onclick="closeModal('subjectModal')">&times;</span>
+            <h2>Add Subject</h2>
+            <form id="subjectForm">
+                <div class="input-group">
+                    <label>Name</label>
+                    <input type="text" id="subName" required>
+                </div>
+                <div class="input-group">
+                    <label>Code</label>
+                    <input type="text" id="subCode" required>
+                </div>
+                <button type="submit" class="btn primary-btn">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script src="js/charts.js"></script>
+</body>
+</html>
